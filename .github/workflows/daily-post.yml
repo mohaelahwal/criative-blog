@@ -1,0 +1,55 @@
+name: Daily AI & Design Post
+
+on:
+  schedule:
+    # Every day at 08:00 UTC
+    - cron: '0 8 * * *'
+  # Allow manual runs from the Actions tab
+  workflow_dispatch:
+
+# Grant the GITHUB_TOKEN write access so the bot can push
+permissions:
+  contents: write
+
+jobs:
+  generate-post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history so the push step works cleanly
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Fetch news and generate post
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node fetch-news.js
+
+      - name: Commit and push new post
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stage only the generated blog post(s)
+          git add src/content/blog/
+
+          # Only commit if there is actually something new
+          if git diff --cached --quiet; then
+            echo "No new post generated — nothing to commit."
+          else
+            DATE=$(date -u +%Y-%m-%d)
+            git commit -m "chore(blog): daily AI & design digest ${DATE} [skip ci]"
+            git push origin HEAD
+          fi

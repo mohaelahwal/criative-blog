@@ -1,0 +1,125 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Header from '../components/Header.astro';
+
+type Props = CollectionEntry<'blog'>['data'];
+
+const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+---
+
+<html lang="en" class="bg-[#0a0a0a]">
+  <head>
+    <BaseHead title={title} description={description} />
+  </head>
+
+  <body class="min-h-screen bg-[#0a0a0a] text-neutral-200">
+    <Header />
+
+    <article>
+
+      <!-- ── Hero ──────────────────────────────────── -->
+      <div class="relative w-full h-[50vh] min-h-[320px] max-h-[520px] overflow-hidden">
+        {heroImage ? (
+          <>
+            <img
+              src={heroImage}
+              alt={title}
+              class="absolute inset-0 w-full h-full object-cover opacity-40"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/70 to-[#0a0a0a]/20"></div>
+          </>
+        ) : (
+          <div class="absolute inset-0 bg-gradient-to-br from-violet-950/40 via-neutral-900 to-[#0a0a0a]">
+            <div
+              class="absolute inset-0 opacity-[0.04]"
+              style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 32px 32px;"
+            ></div>
+          </div>
+        )}
+
+        <!-- Title block anchored to bottom of hero -->
+        <div class="absolute bottom-0 left-0 right-0 max-w-4xl mx-auto px-6 lg:px-8 pb-8">
+          <div class="flex items-center gap-3 mb-3">
+            <a
+              href="/"
+              class="flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-300
+                     transition-colors group"
+            >
+              <svg class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+              </svg>
+              Back
+            </a>
+            <span class="text-neutral-700">/</span>
+            <time class="text-xs text-neutral-500">
+              <FormattedDate date={pubDate} />
+            </time>
+            {updatedDate && (
+              <>
+                <span class="text-neutral-700">&mdash;</span>
+                <time class="text-xs text-neutral-500 italic">
+                  Updated <FormattedDate date={updatedDate} />
+                </time>
+              </>
+            )}
+          </div>
+
+          <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight">
+            {title}
+          </h1>
+
+          {description && (
+            <p class="mt-3 text-base text-neutral-400 max-w-2xl leading-relaxed">
+              {description}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <!-- ── Content ───────────────────────────────── -->
+      <div class="max-w-4xl mx-auto px-6 lg:px-8 py-12">
+        <div
+          class="prose prose-dark prose-lg max-w-none
+                 prose-headings:font-bold prose-headings:tracking-tight
+                 prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4
+                 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+                 prose-p:leading-relaxed
+                 prose-a:no-underline prose-a:border-b prose-a:border-violet-500/40
+                 hover:prose-a:border-violet-400
+                 prose-strong:text-white
+                 prose-blockquote:border-l-violet-500 prose-blockquote:bg-violet-950/20
+                 prose-blockquote:rounded-r-lg prose-blockquote:py-1
+                 prose-code:text-violet-300 prose-code:bg-neutral-800/60
+                 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                 prose-pre:bg-neutral-900 prose-pre:border prose-pre:border-neutral-800
+                 prose-hr:border-neutral-800
+                 prose-img:rounded-xl prose-img:border prose-img:border-neutral-800"
+        >
+          <slot />
+        </div>
+
+        <!-- ── Back link ───────────────────────────── -->
+        <div class="mt-16 pt-8 border-t border-neutral-800">
+          <a
+            href="/"
+            class="inline-flex items-center gap-2 text-sm font-medium text-neutral-500
+                   hover:text-violet-400 transition-colors group"
+          >
+            <svg class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+            </svg>
+            Back to all dispatches
+          </a>
+        </div>
+      </div>
+
+    </article>
+
+    <Footer />
+  </body>
+</html>

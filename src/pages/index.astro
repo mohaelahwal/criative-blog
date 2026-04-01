@@ -1,0 +1,237 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import ThreeBackground from '../components/ThreeBackground.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const SOURCE_LABELS: Record<string, string> = {
+  'awwwards':     'Awwwards',
+  'google-cloud': 'Google Cloud',
+  'feed':         'From the Feed',
+};
+
+// Cycling image aspect ratios — only height differs between cards
+const ASPECTS = [
+  'aspect-[3/2]',
+  'aspect-[16/9]',
+  'aspect-[4/3]',
+  'aspect-[2/1]',
+  'aspect-[5/4]',
+  'aspect-[3/2]',
+];
+
+// Split into two columns for stagger offset
+const leftPosts  = posts.filter((_, i) => i % 2 === 0);
+const rightPosts = posts.filter((_, i) => i % 2 === 1);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+  </head>
+
+  <body class="bg-[#0a0a0a] text-white min-h-screen overflow-x-hidden">
+
+    <!-- WebGPU 3D skull background -->
+    <ThreeBackground />
+
+    <!-- All page content sits above canvas -->
+    <div class="relative z-10">
+      <Header />
+
+      <!-- Hero — left aligned -->
+      <section class="max-w-6xl mx-auto mt-16 mb-24 px-4">
+        <span class="text-4xl md:text-5xl font-extrabold text-white tracking-tight block">
+          Stay ahead with the latest news
+        </span>
+        <span class="text-4xl md:text-5xl font-normal text-white/70 block mt-2">
+          in creativity, design, and artificial intelligence.
+        </span>
+      </section>
+
+      <main class="max-w-6xl mx-auto px-4 pb-24">
+
+        {posts.length === 0 ? (
+          <div class="flex flex-col items-center justify-center py-40 gap-4">
+            <p class="text-white/30 text-sm font-mono">No posts yet.</p>
+            <code class="text-white/20 text-xs bg-white/5 px-3 py-1.5">npm run fetch-news</code>
+          </div>
+        ) : (
+          <>
+            {/* Two equal columns — right column offset down for stagger */}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+
+              {/* Left column */}
+              <div class="flex flex-col gap-6">
+                {leftPosts.map((post, idx) => {
+                  const i = idx * 2;
+                  const sourceLabel = SOURCE_LABELS[post.data.source ?? ''] ?? 'Post';
+                  const date = post.data.pubDate
+                    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    .toUpperCase();
+                  const meta   = `${sourceLabel.toUpperCase()} ${date}`;
+                  const aspect = ASPECTS[i % ASPECTS.length];
+
+                  return (
+                    <a
+                      href={`/blog/${post.id}/`}
+                      class="post-card group block"
+                      style={`transition-delay:${i * 30}ms`}
+                    >
+                      {post.data.image && (
+                        <div class={`overflow-hidden ${aspect}`}>
+                          <img
+                            src={post.data.image}
+                            alt={post.data.title}
+                            loading="lazy"
+                            decoding="async"
+                            class="w-full h-full object-cover rounded-none
+                                   opacity-90 group-hover:opacity-100
+                                   group-hover:scale-[1.04]
+                                   transition-all duration-500 ease-out"
+                          />
+                        </div>
+                      )}
+                      <div class="bg-black/30 backdrop-blur-md p-6">
+                        <span class="text-[10px] font-mono uppercase tracking-widest text-white/50 mb-3 block">
+                          {meta}
+                        </span>
+                        <span class="text-xl md:text-2xl font-black uppercase text-white tracking-wide mb-2 block
+                                     group-hover:text-white/80 transition-colors duration-200">
+                          {post.data.title}
+                        </span>
+                        {post.data.description && (
+                          <span class="text-[11px] text-white/60 truncate block mb-6">
+                            {post.data.description}
+                          </span>
+                        )}
+                        <span class="text-[10px] uppercase tracking-wider text-white/40
+                                     group-hover:text-white/70 transition-colors duration-200">
+                          Read Post &rsaquo;
+                        </span>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+
+              {/* Right column — pushed down to break vertical alignment */}
+              <div class="flex flex-col gap-6 md:mt-20">
+                {rightPosts.map((post, idx) => {
+                  const i = idx * 2 + 1;
+                  const sourceLabel = SOURCE_LABELS[post.data.source ?? ''] ?? 'Post';
+                  const date = post.data.pubDate
+                    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    .toUpperCase();
+                  const meta   = `${sourceLabel.toUpperCase()} ${date}`;
+                  const aspect = ASPECTS[i % ASPECTS.length];
+
+                  return (
+                    <a
+                      href={`/blog/${post.id}/`}
+                      class="post-card group block"
+                      style={`transition-delay:${i * 30}ms`}
+                    >
+                      {post.data.image && (
+                        <div class={`overflow-hidden ${aspect}`}>
+                          <img
+                            src={post.data.image}
+                            alt={post.data.title}
+                            loading="lazy"
+                            decoding="async"
+                            class="w-full h-full object-cover rounded-none
+                                   opacity-90 group-hover:opacity-100
+                                   group-hover:scale-[1.04]
+                                   transition-all duration-500 ease-out"
+                          />
+                        </div>
+                      )}
+                      <div class="bg-black/30 backdrop-blur-md p-6">
+                        <span class="text-[10px] font-mono uppercase tracking-widest text-white/50 mb-3 block">
+                          {meta}
+                        </span>
+                        <span class="text-xl md:text-2xl font-black uppercase text-white tracking-wide mb-2 block
+                                     group-hover:text-white/80 transition-colors duration-200">
+                          {post.data.title}
+                        </span>
+                        {post.data.description && (
+                          <span class="text-[11px] text-white/60 truncate block mb-6">
+                            {post.data.description}
+                          </span>
+                        )}
+                        <span class="text-[10px] uppercase tracking-wider text-white/40
+                                     group-hover:text-white/70 transition-colors duration-200">
+                          Read Post &rsaquo;
+                        </span>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+
+            </div>
+
+            {/* Load More */}
+            <div class="flex justify-center mt-10">
+              <button
+                type="button"
+                class="group inline-flex items-center gap-2 px-7 py-2.5
+                       border border-white/[0.10]
+                       font-mono text-[9px] tracking-[0.22em] uppercase
+                       text-white/30 hover:text-white/60
+                       hover:border-white/[0.22]
+                       transition-all duration-300"
+              >
+                Load More Posts
+                <span class="group-hover:translate-x-0.5 inline-block transition-transform duration-200">
+                  &rsaquo;
+                </span>
+              </button>
+            </div>
+          </>
+        )}
+
+      </main>
+
+      <Footer />
+    </div>
+  </body>
+</html>
+
+<style>
+  /* ── Card entrance ───────────────────────────────────── */
+  .post-card {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  .post-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 0.5s ease,
+      transform 0.5s ease;
+  }
+</style>
+
+<script>
+  const cards = document.querySelectorAll<HTMLElement>('.post-card');
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          (e.target as HTMLElement).classList.add('visible');
+          io.unobserve(e.target);
+        }
+      });
+    },
+    { threshold: 0.06, rootMargin: '0px 0px -20px 0px' }
+  );
+  cards.forEach((c) => io.observe(c));
+</script>

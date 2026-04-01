@@ -1,0 +1,31 @@
+{
+  "name": "criative-blog",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "fetch-news": "node fetch-news.js"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^5.0.3",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.2",
+    "@google/generative-ai": "^0.24.1",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.2.2",
+    "astro": "^6.1.2",
+    "cheerio": "^1.2.0",
+    "dotenv": "^17.3.1",
+    "maath": "^0.10.8",
+    "rss-parser": "^3.13.0",
+    "sharp": "^0.34.3",
+    "tailwindcss": "^4.2.2",
+    "three": "^0.183.2"
+  }
+}

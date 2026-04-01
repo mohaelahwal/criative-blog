@@ -1,0 +1,28 @@
+---
+// ThreeBackground — WebGPU fluid skull reveal
+// Creates and appends its own fixed canvas to <body> at z-index -1
+---
+
+<script>
+  import ThreeApp from '../lib/three-skull/ThreeApp.js';
+
+  async function init() {
+    // WebGPU is only available in modern Chromium / Safari 18+
+    // Silently skip if not supported so the rest of the page still works
+    if (!navigator.gpu) {
+      console.info('[ThreeBackground] WebGPU not supported — skipping 3D background.');
+      return;
+    }
+
+    try {
+      const app = new ThreeApp();
+      await app.run();
+      await app.scene.ready;
+    } catch (err) {
+      console.warn('[ThreeBackground] init failed:', err);
+    }
+  }
+
+  // Run after DOM is ready (Astro scripts are deferred by default)
+  init();
+</script>
