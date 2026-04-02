@@ -13,22 +13,8 @@ const posts = (await getCollection('blog')).sort(
 const SOURCE_LABELS: Record<string, string> = {
   'awwwards':     'Awwwards',
   'google-cloud': 'Google Cloud',
-  'feed':         'From the Feed',
+  'feed':         'Feed',
 };
-
-// Cycling image aspect ratios — only height differs between cards
-const ASPECTS = [
-  'aspect-[3/2]',
-  'aspect-[16/9]',
-  'aspect-[4/3]',
-  'aspect-[2/1]',
-  'aspect-[5/4]',
-  'aspect-[3/2]',
-];
-
-// Split into two columns for stagger offset
-const leftPosts  = posts.filter((_, i) => i % 2 === 0);
-const rightPosts = posts.filter((_, i) => i % 2 === 1);
 ---
 
 <!doctype html>
@@ -42,155 +28,128 @@ const rightPosts = posts.filter((_, i) => i % 2 === 1);
     <!-- WebGPU 3D skull background -->
     <ThreeBackground />
 
-    <!-- All page content sits above canvas -->
+    <!-- Dark overlay sits on top of WebGL but behind all content -->
+    <div class="fixed inset-0 z-0 bg-black/65 pointer-events-none"></div>
+
+    <!-- All page content -->
     <div class="relative z-10">
       <Header />
 
-      <!-- Hero — left aligned -->
-      <section class="max-w-6xl mx-auto mt-16 mb-24 px-4">
-        <span class="text-4xl md:text-5xl font-extrabold text-white tracking-tight block">
-          Stay ahead with the latest news
-        </span>
-        <span class="text-4xl md:text-5xl font-normal text-white/70 block mt-2">
-          in creativity, design, and artificial intelligence.
-        </span>
+      <!-- Hero slogan — centered, two lines, all caps -->
+      <section class="text-center px-6 pt-10 pb-14">
+        <p class="text-3xl md:text-4xl font-extrabold text-white/50 tracking-tight leading-tight uppercase block">
+          Make it feel. Make it mean. Something.
+        </p>
+        <p class="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight uppercase block mt-1">
+          Keep it raw.
+        </p>
       </section>
 
-      <main class="max-w-6xl mx-auto px-4 pb-24">
+      <!-- ── Bento Grid ───────────────────────────────────── -->
+      <main class="max-w-7xl mx-auto px-6 pb-24">
 
         {posts.length === 0 ? (
           <div class="flex flex-col items-center justify-center py-40 gap-4">
-            <p class="text-white/30 text-sm font-mono">No posts yet.</p>
+            <p class="text-white/30 text-sm">No posts yet.</p>
             <code class="text-white/20 text-xs bg-white/5 px-3 py-1.5">npm run fetch-news</code>
           </div>
         ) : (
           <>
-            {/* Two equal columns — right column offset down for stagger */}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[1px] border border-white/10">
+              {posts.map((post, i) => {
+                const sourceLabel = SOURCE_LABELS[post.data.source ?? ''] ?? 'RAWW';
+                const date = post.data.pubDate
+                  .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                  .toUpperCase();
 
-              {/* Left column */}
-              <div class="flex flex-col gap-6">
-                {leftPosts.map((post, idx) => {
-                  const i = idx * 2;
-                  const sourceLabel = SOURCE_LABELS[post.data.source ?? ''] ?? 'Post';
-                  const date = post.data.pubDate
-                    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                    .toUpperCase();
-                  const meta   = `${sourceLabel.toUpperCase()} ${date}`;
-                  const aspect = ASPECTS[i % ASPECTS.length];
+                return (
+                  <a
+                    href={`/blog/${post.id}/`}
+                    class="post-card group flex flex-col bg-[#0a0a0a] border border-white/[0.07]
+                           hover:border-white/20 hover:bg-white/[0.03]
+                           transition-colors duration-200"
+                    style={`transition-delay:${Math.min(i * 25, 300)}ms`}
+                  >
+                    {/* Image */}
+                    {post.data.image ? (
+                      <div class="overflow-hidden aspect-[16/10] border-b border-white/[0.07]">
+                        <img
+                          src={post.data.image}
+                          alt={post.data.title}
+                          loading="lazy"
+                          decoding="async"
+                          class="w-full h-full object-cover
+                                 opacity-85 group-hover:opacity-100
+                                 group-hover:scale-[1.03]
+                                 transition-all duration-500 ease-out"
+                        />
+                      </div>
+                    ) : (
+                      <div class="aspect-[16/10] border-b border-white/[0.07] bg-white/[0.02] flex items-center justify-center">
+                        <span class="text-white/10 text-xs tracking-widest uppercase">raww.io</span>
+                      </div>
+                    )}
 
-                  return (
-                    <a
-                      href={`/blog/${post.id}/`}
-                      class="post-card group block"
-                      style={`transition-delay:${i * 30}ms`}
-                    >
-                      {post.data.image && (
-                        <div class={`overflow-hidden ${aspect}`}>
-                          <img
-                            src={post.data.image}
-                            alt={post.data.title}
-                            loading="lazy"
-                            decoding="async"
-                            class="w-full h-full object-cover rounded-none
-                                   opacity-90 group-hover:opacity-100
-                                   group-hover:scale-[1.04]
-                                   transition-all duration-500 ease-out"
-                          />
-                        </div>
-                      )}
-                      <div class="bg-black/30 backdrop-blur-md p-6">
-                        <span class="text-[10px] font-mono uppercase tracking-widest text-white/50 mb-3 block">
-                          {meta}
+                    {/* Structured footer */}
+                    <div class="flex flex-col flex-1">
+
+                      {/* Meta row */}
+                      <div class="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.07]">
+                        <span class="text-[9px] font-medium tracking-[0.2em] uppercase text-white/30">
+                          RAWW
                         </span>
-                        <span class="text-xl md:text-2xl font-black uppercase text-white tracking-wide mb-2 block
-                                     group-hover:text-white/80 transition-colors duration-200">
-                          {post.data.title}
+                        <span class="text-white/10">·</span>
+                        <span class="text-[9px] font-medium tracking-[0.15em] uppercase text-white/25">
+                          {sourceLabel}
                         </span>
-                        {post.data.description && (
-                          <span class="text-[11px] text-white/60 truncate block mb-6">
-                            {post.data.description}
-                          </span>
-                        )}
-                        <span class="text-[10px] uppercase tracking-wider text-white/40
-                                     group-hover:text-white/70 transition-colors duration-200">
-                          Read Post &rsaquo;
+                        <span class="ml-auto text-[9px] tracking-[0.1em] text-white/20">
+                          {date}
                         </span>
                       </div>
-                    </a>
-                  );
-                })}
-              </div>
 
-              {/* Right column — pushed down to break vertical alignment */}
-              <div class="flex flex-col gap-6 md:mt-20">
-                {rightPosts.map((post, idx) => {
-                  const i = idx * 2 + 1;
-                  const sourceLabel = SOURCE_LABELS[post.data.source ?? ''] ?? 'Post';
-                  const date = post.data.pubDate
-                    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                    .toUpperCase();
-                  const meta   = `${sourceLabel.toUpperCase()} ${date}`;
-                  const aspect = ASPECTS[i % ASPECTS.length];
-
-                  return (
-                    <a
-                      href={`/blog/${post.id}/`}
-                      class="post-card group block"
-                      style={`transition-delay:${i * 30}ms`}
-                    >
-                      {post.data.image && (
-                        <div class={`overflow-hidden ${aspect}`}>
-                          <img
-                            src={post.data.image}
-                            alt={post.data.title}
-                            loading="lazy"
-                            decoding="async"
-                            class="w-full h-full object-cover rounded-none
-                                   opacity-90 group-hover:opacity-100
-                                   group-hover:scale-[1.04]
-                                   transition-all duration-500 ease-out"
-                          />
-                        </div>
-                      )}
-                      <div class="bg-black/30 backdrop-blur-md p-6">
-                        <span class="text-[10px] font-mono uppercase tracking-widest text-white/50 mb-3 block">
-                          {meta}
-                        </span>
-                        <span class="text-xl md:text-2xl font-black uppercase text-white tracking-wide mb-2 block
-                                     group-hover:text-white/80 transition-colors duration-200">
+                      {/* Title */}
+                      <div class="px-4 pt-4 pb-3 border-b border-white/[0.07] flex-1">
+                        <h2 class="text-[15px] md:text-base font-bold uppercase text-white leading-snug tracking-wide
+                                   group-hover:text-white/80 transition-colors duration-200">
                           {post.data.title}
-                        </span>
+                        </h2>
                         {post.data.description && (
-                          <span class="text-[11px] text-white/60 truncate block mb-6">
+                          <p class="text-[11px] text-white/35 mt-2 leading-relaxed line-clamp-2">
                             {post.data.description}
-                          </span>
+                          </p>
                         )}
-                        <span class="text-[10px] uppercase tracking-wider text-white/40
-                                     group-hover:text-white/70 transition-colors duration-200">
+                      </div>
+
+                      {/* Read link */}
+                      <div class="px-4 py-3 flex items-center justify-between">
+                        <span class="text-[9px] font-medium tracking-[0.2em] uppercase text-white/25
+                                     group-hover:text-white/60 transition-colors duration-200">
                           Read Post &rsaquo;
                         </span>
+                        <span class="text-[9px] text-white/10 tracking-widest">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
                       </div>
-                    </a>
-                  );
-                })}
-              </div>
 
+                    </div>
+                  </a>
+                );
+              })}
             </div>
 
             {/* Load More */}
-            <div class="flex justify-center mt-10">
+            <div class="flex justify-center mt-12">
               <button
                 type="button"
-                class="group inline-flex items-center gap-2 px-7 py-2.5
-                       border border-white/[0.10]
-                       font-mono text-[9px] tracking-[0.22em] uppercase
+                class="group inline-flex items-center gap-3 px-8 py-3
+                       border border-white/[0.12]
+                       text-[10px] font-medium tracking-[0.25em] uppercase
                        text-white/30 hover:text-white/60
-                       hover:border-white/[0.22]
+                       hover:border-white/25
                        transition-all duration-300"
               >
                 Load More Posts
-                <span class="group-hover:translate-x-0.5 inline-block transition-transform duration-200">
+                <span class="group-hover:translate-x-1 inline-block transition-transform duration-200">
                   &rsaquo;
                 </span>
               </button>
@@ -206,17 +165,17 @@ const rightPosts = posts.filter((_, i) => i % 2 === 1);
 </html>
 
 <style>
-  /* ── Card entrance ───────────────────────────────────── */
+  /* ── Card entrance ─────────────────────────────────────── */
   .post-card {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(12px);
   }
   .post-card.visible {
     opacity: 1;
     transform: translateY(0);
     transition:
-      opacity 0.5s ease,
-      transform 0.5s ease;
+      opacity 0.45s ease,
+      transform 0.45s ease;
   }
 </style>
 
@@ -231,7 +190,7 @@ const rightPosts = posts.filter((_, i) => i % 2 === 1);
         }
       });
     },
-    { threshold: 0.06, rootMargin: '0px 0px -20px 0px' }
+    { threshold: 0.05, rootMargin: '0px 0px -10px 0px' }
   );
   cards.forEach((c) => io.observe(c));
 </script>

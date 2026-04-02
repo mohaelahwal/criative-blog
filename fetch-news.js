@@ -25,7 +25,7 @@ const parser = new RSSParser({
     ],
   },
   timeout: 15000,
-  headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CriativeBlogBot/1.0)' },
+  headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RawwBlogBot/1.0)' },
 });
 
 // ─── Fallback images (dark / abstract) ───────────────────────────────────────
@@ -143,8 +143,15 @@ async function processAwwwards() {
     for (const item of items) {
       const siteName = item.title?.trim() || 'Awwwards Site of the Day';
       const dateStr  = (item.isoDate || item.pubDate || todayISO()).split('T')[0];
-      const image    = extractImage(item);
-      const link     = item.link || item.guid || '';
+      const filename = `${dateStr}-awwwards-${slugify(siteName)}.md`;
+
+      if (fs.existsSync(path.join(OUT_DIR, filename))) {
+        console.log(`  ↩  Skipped (exists): ${filename}`);
+        continue;
+      }
+
+      const image = extractImage(item);
+      const link  = item.link || item.guid || '';
 
       const body = [
         `**${siteName}** has been awarded the Awwwards Site of the Day for its exceptional design, creativity, and usability.`,
@@ -189,9 +196,16 @@ async function processGoogleCloud() {
     if (items.length === 0) { console.warn('  ⚠  No AI posts found'); return; }
 
     for (const item of items) {
-      const title   = item.title?.trim() || 'Google Cloud AI Update';
+      const title    = item.title?.trim() || 'Google Cloud AI Update';
+      const dateStr  = (item.isoDate || item.pubDate || todayISO()).split('T')[0];
+      const filename = `${dateStr}-gcp-${slugify(title)}.md`;
+
+      if (fs.existsSync(path.join(OUT_DIR, filename))) {
+        console.log(`  ↩  Skipped (exists): ${filename}`);
+        continue;
+      }
+
       const link    = item.link || item.guid || '';
-      const dateStr = (item.isoDate || item.pubDate || todayISO()).split('T')[0];
       const snippet = item.contentSnippet?.slice(0, 300).trim() || '';
       const image   = extractImage(item);
 
@@ -227,10 +241,25 @@ async function processXPost() {
     const items = (feed.items || []).slice(0, 10);
     if (items.length === 0) { console.warn('  ⚠  No items found'); return; }
 
+    // Build a set of all sourceLinks already on disk — checked once per run
+    const existingLinks = new Set(
+      fs.readdirSync(OUT_DIR).flatMap((f) => {
+        const text = fs.readFileSync(path.join(OUT_DIR, f), 'utf8');
+        const m = text.match(/^sourceLink:\s*'(.+?)'/m);
+        return m ? [m[1]] : [];
+      })
+    );
+
     for (const item of items) {
-      const rawText = item.contentSnippet || item.content || item.title || '';
       const url     = item.link || item.guid || '';
       const dateStr = (item.isoDate || item.pubDate || todayISO()).split('T')[0];
+
+      if (existingLinks.has(url)) {
+        console.log(`  ↩  Skipped (URL seen): ${url}`);
+        continue;
+      }
+
+      const rawText = item.contentSnippet || item.content || item.title || '';
       const image   = extractImage(item);
 
       console.log('  → Sending to Gemini…');

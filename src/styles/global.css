@@ -8,7 +8,7 @@
   --color-accent:     #a78bfa;
   --color-accent-dim: #7c3aed;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
@@ -18,7 +18,7 @@ html { scroll-behavior: smooth; }
 body {
   background-color: #0a0a0a;
   color: #e5e5e5;
-  font-family: var(--font-sans);
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -30,22 +30,22 @@ body {
 ::-webkit-scrollbar-thumb:hover  { background: #555; }
 
 /* ── Selection ──────────────────────────────────────────── */
-::selection { background: #7c3aed40; color: #e5e5e5; }
+::selection { background: #ffffff20; color: #ffffff; }
 
 /* ── Prose overrides (dark) ─────────────────────────────── */
 .prose-dark {
   --tw-prose-body:          #d4d4d4;
   --tw-prose-headings:      #fafafa;
   --tw-prose-lead:          #a3a3a3;
-  --tw-prose-links:         #a78bfa;
+  --tw-prose-links:         #ffffff;
   --tw-prose-bold:          #fafafa;
   --tw-prose-counters:      #737373;
   --tw-prose-bullets:       #525252;
   --tw-prose-hr:            #262626;
   --tw-prose-quotes:        #e5e5e5;
-  --tw-prose-quote-borders: #7c3aed;
+  --tw-prose-quote-borders: #444;
   --tw-prose-captions:      #737373;
-  --tw-prose-code:          #c084fc;
+  --tw-prose-code:          #e5e5e5;
   --tw-prose-pre-code:      #e5e5e5;
   --tw-prose-pre-bg:        #111111;
   --tw-prose-th-borders:    #262626;
